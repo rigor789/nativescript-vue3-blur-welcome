@@ -1,57 +1,94 @@
 <script lang="ts" setup>
-import {
-  ref,
-  computed,
-  onMounted,
-  onUnmounted,
-  $navigateTo,
-} from 'nativescript-vue';
-import Details from './Details.vue';
+import { Color } from "@nativescript/core";
 
-const counter = ref(0);
-const message = computed(() => {
-  return `Blank {N}-Vue app: ${counter.value}`;
-});
-
-function logMessage() {
-  console.log('You have tapped the message!');
+function makeGradientText(args: any) {
+  const view = args.object.nativeTextViewProtected as android.widget.TextView;
+  if (!view) {
+    return;
+  }
+  applyGradient(view);
 }
 
-let interval: any;
-onMounted(() => {
-  console.log('mounted');
-  interval = setInterval(() => counter.value++, 100);
-});
+function applyGradient(view: android.widget.TextView) {
+  const colors = Array.create("int", 2);
+  colors[0] = new Color("#9333ea").android;
+  colors[1] = new Color("#67e8f9").android;
 
-onUnmounted(() => {
-  console.log('unmounted');
-  clearInterval(interval);
-});
+  // const positions = Array.create("float", 2);
+  // positions[0] = 0;
+  // positions[1] = 1;
+
+  const textShader = new android.graphics.LinearGradient(
+    0,
+    0,
+    888, // this is a random-ish number picked to make the gradient look good...
+    0,
+    colors,
+    null as any, // positions,
+    android.graphics.LinearGradient.TileMode.MIRROR
+  );
+
+  view.getPaint().setShader(textShader);
+  view.invalidate();
+}
+
+function log(message: string) {
+  console.log(message);
+}
 </script>
 
 <template>
   <Frame>
-    <Page>
-      <ActionBar>
-        <Label text="Home" class="font-bold text-lg" />
-      </ActionBar>
+    <Page actionBarHidden="true" backgroundSpanUnderStatusBar="true">
+      <GridLayout rows="*, auto, auto, *, auto">
+        <Image rowSpan="5" src="~/assets/bg-1.jpg" stretch="aspectFill" />
+        <ContentView rowSpan="5" class="bg-gradient-cover" />
 
-      <GridLayout rows="*, auto, auto, *" class="px-4">
-        <Label
+        <Image
           row="1"
-          class="text-xl align-middle text-center text-gray-500"
-          :text="message"
-          @tap="logMessage"
+          src="~/assets/logo.png"
+          stretch="aspectFit"
+          class="w-[100]"
         />
 
-        <Button
-          row="2"
-          @tap="$navigateTo(Details)"
-          class="mt-4 px-4 py-2 bg-white border-2 border-blue-400 rounded-lg"
-          horizontalAlignment="center"
-        >
-          View Details
-        </Button>
+        <StackLayout row="2" class="mt-8">
+          <Label
+            text="Build Something"
+            class="text-4xl font-bold text-white text-center leading-none"
+            textWrap="true"
+          />
+          <Label
+            text="Awesome"
+            @layoutChanged="makeGradientText"
+            class="-mt-2 text-4xl font-bold text-center leading-none text-white"
+          />
+
+          <Label
+            text="No, seriously! :)"
+            class="text-sm font-bold text-white/60 text-center mt-4"
+          />
+        </StackLayout>
+
+        <StackLayout row="4" class="px-8 pb-8 mt-4">
+          <Label
+            @tap="log('Sign up')"
+            class="px-4 py-4 text-black bg-white text-center text-sm font-bold rounded-full"
+          >
+            Sign Up
+          </Label>
+
+          <CornerView class="mt-4">
+            <BlurView>
+              <Label
+                @tap="log('Log In')"
+                class="px-4 py-4 text-white text-center text-sm font-bold border-4 border-white rounded-full"
+                horizontalAlignment="center"
+              >
+                Log In
+              </Label>
+            </BlurView>
+          </CornerView>
+        </StackLayout>
       </GridLayout>
     </Page>
   </Frame>
